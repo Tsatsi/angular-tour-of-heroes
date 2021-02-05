@@ -1,25 +1,35 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { RouterTestingModule } from '@angular/router/testing';
+import { render, screen } from '@testing-library/angular';
+import { createMock } from '@testing-library/angular/jest-utils';
+
+import { of } from 'rxjs';
+import { HeroSearchComponent } from '../hero-search/hero-search.component';
+import { Hero } from '../models/hero';
+import { HeroService } from '../services/hero/hero.service';
 
 import { DashboardComponent } from './dashboard.component';
 
 describe('DashboardComponent', () => {
-  let component: DashboardComponent;
-  let fixture: ComponentFixture<DashboardComponent>;
+  test('should render component with the heroes displayed', async () => {
+    const heroes: Hero[] = [
+      {
+        id: 1,
+        name: 'sarah',
+      },
+      {
+        id: 2,
+        name: 'charlotte',
+      },
+    ];
+    const heroService = createMock(HeroService);
+    heroService.getHeroes = jest.fn(() => of(heroes));
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      declarations: [ DashboardComponent ]
-    })
-    .compileComponents();
-  });
-
-  beforeEach(() => {
-    fixture = TestBed.createComponent(DashboardComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-  });
-
-  it('should create', () => {
-    expect(component).toBeTruthy();
+    await render(DashboardComponent, {
+      declarations: [HeroSearchComponent],
+      providers: [{ provide: HeroService, useValue: heroService }],
+      imports: [RouterTestingModule]
+    });
+    expect(screen.getByText('charlotte')).toBeVisible();
+    expect(screen.getByText('sarah')).toBeVisible();
   });
 });
